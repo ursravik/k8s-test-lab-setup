@@ -1,0 +1,4 @@
+- hosts: infra
+  serial: 1
+  roles:
+    - k8sworkerupgrade

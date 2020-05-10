@@ -1,0 +1,13 @@
+#Virtual box host only network 
+#192.168.56.0/24 
+192.168.122.249 master
+192.168.122.122 worker01
+192.168.122.220 worker02
+192.168.122.218 worker03
+192.168.122.59 san00
+192.168.122.51 san01
+
+
+192.168.56.1	U12C			# Laptop
+127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
+::1         localhost localhost.localdomain localhost6 localhost6.localdomain6

@@ -1,0 +1,79 @@
+---
+#- hosts: master
+#  roles:
+#    - helm
+#    - etcd
+#    - { role: prometheus, tags: prometheus }
+
+- hosts: master
+  tasks:
+    - name: generate key pair
+      shell: |
+        ssh-keygen -b 2048 -t rsa -f /root/.ssh/id_rsa -q -N ''
+        exit 0
+
+      args:
+        creates: /root/.ssh/id_rsa 
+
+    - name: test public key
+      shell: ssh-keygen -l -f /root/.ssh/id_rsa.pub
+      changed_when: false
+
+    - name: retrieve public key
+      shell: cat /root/.ssh/id_rsa.pub
+      register: master_public_key
+      changed_when: false
+
+- hosts: san
+  tasks:
+    - name: add master public key to san nodes
+      authorized_key:
+        user: root
+        key: "{{ hostvars['master'].master_public_key.stdout }}"
+
+- hosts: san
+  tasks:
+    - name: copy /etc/hosts file
+      copy:
+        src: ./files/hosts
+        dest: /etc/hosts
+        mode: '0644'
+
+    - name: install centos-release-gluster
+      yum:
+        name: centos-release-gluster
+        state: present
+        update_cache: true
+
+    - name: stop firewalld
+      service:
+        name: firewalld
+        state: stopped
+        enabled: no
+
+    - name: disable SELinux
+      command: setenforce 0
+      ignore_errors: yes
+
+    - name: disable SELinux on reboot
+      selinux:
+        state: disabled
+
+    - name: start glusterd
+      service:
+        name: glusterd
+        state: started
+        enabled: yes
+
+    - name: check peer san00
+      shell: gluster peer probe san01
+      register: gluster_san00
+    - debug:
+        var: gluster_san00
+
+    - name: check peer san01
+      shell: gluster peer probe san00
+      register: gluster_san01
+    - debug:
+       var: gluster_san01
+

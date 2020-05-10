@@ -1,0 +1,83 @@
+- name: copy /etc/hosts file
+  copy:
+    src: ./files/hosts
+    dest: /etc/hosts
+    mode: '0644'
+
+- name: swappoff
+  shell: "swapoff -a"
+
+- name: disable swap
+  mount:
+    name: swap
+    fstype: swap
+    state: absent
+
+- name: install Docker
+  yum:
+    name: docker
+    state: present
+    update_cache: true
+       
+- name: start Docker
+  service:
+    name: docker
+    state: started
+    enabled: yes
+
+- name: stop firewalld
+  service:
+    name: firewalld
+    state: stopped
+    enabled: no
+
+- name: disable SELinux
+  command: setenforce 0
+  ignore_errors: yes
+
+- name: disable SELinux on reboot
+  selinux:
+    state: disabled
+
+- name: ensure net.ipv4.ip_forward is set to 1
+  sysctl:
+    name: net.ipv4.ip_forward
+    value: 1
+    sysctl_set: yes
+    state: present
+    reload: yes
+
+- name: enable bridge netfilters using modprobe
+  shell: "modprobe br_netfilter"    
+- name: ensure net.bridge.bridge-nf-call-iptables is set to 1
+  sysctl:
+    name: net.bridge.bridge-nf-call-iptables
+    sysctl_set: yes
+    value: 1
+    state: present
+    reload: yes
+
+- name: add Kubernetes' YUM repository
+  yum_repository:
+    name: Kubernetes
+    description: Kubernetes YUM repository
+    baseurl: https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64
+    gpgkey: https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
+    gpgcheck: yes
+
+- name: install kubelet
+  yum:
+    name: kubelet-1.14.0
+    state: present
+    update_cache: true
+
+- name: install kubeadm
+  yum:
+    name: kubeadm-1.14.0
+    state: present
+
+- name: start kubelet
+  service:
+    name: kubelet
+    enabled: yes
+    state: started

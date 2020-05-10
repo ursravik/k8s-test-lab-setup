@@ -1,0 +1,25 @@
+- name: Remove etcd backup flag
+  file: 
+    path: /tmp/etcdbackupcompleted
+    state: absent
+
+- name: Backup etcd data base
+  shell: "ETCDCTL_API=3 etcdctl --endpoints={{ end_point }} --cacert={{ etcd_cacert }} --cert={{ etcd_cert }} --key={{ etcd_key }} snapshot save {{ pathtosave }}"
+
+- name: check if backup exists and register output
+  stat:
+    path: "{{ pathtosave }}"
+  register: stat_result
+
+- name: Create flag if backup exists
+  file:
+    path: /tmp/etcdbackupcompleted
+    state: touch
+  when: stat_result.stat.exists == True
+
+- name: Backup status verify
+  shell: "ETCDCTL_API=3 etcdctl --endpoints={{ end_point }} --cacert={{ etcd_cacert }} --cert={{ etcd_cert }} --key={{ etcd_key }} --write-out=table snapshot status {{ pathtosave }}" 
+  register: backup_result
+
+- debug:
+    var: backup_result.stdout_lines

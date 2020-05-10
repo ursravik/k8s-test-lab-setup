@@ -1,0 +1,25 @@
+- name: initialize the cluster
+  shell: kubeadm init --apiserver-advertise-address=192.168.122.24 --pod-network-cidr=172.16.0.0/16
+  register: output
+    
+- name: storing token
+  local_action: copy content={{ output.stdout }} dest=./token_details
+
+- name: create .kube directory
+  file:
+    path: /root/.kube
+    state: directory
+    mode: 0755
+
+- name: copy admin.conf to user's kube config
+  copy:
+    src: /etc/kubernetes/admin.conf
+    dest: /root/.kube/config
+    remote_src: yes
+
+- name: print cluster status
+  shell: kubectl get nodes
+  register: output
+- debug:
+    var: output.stdout_lines
+

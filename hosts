@@ -1,0 +1,18 @@
+[abc:children]
+master
+infra
+
+[master]
+master	# Kube Master
+
+[infra]
+worker01   # Kube worker1, infra node
+worker02	# Kube worker2, infra node and san
+worker03	# kube worker3, infra node and san
+
+[san]
+san00  #gluster node1
+san01  #gluster node2
+
+[all:vars]
+ansible_user=root

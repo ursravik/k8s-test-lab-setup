@@ -1,0 +1,10 @@
+- name: pause for cluster to create all pods
+  pause:
+    minutes: 2
+
+- name: Copy install script
+  copy: src=./files/weave.sh dest=/tmp/weave.sh mode=0755
+
+- name: install Pod network
+  command: sh /tmp/weave.sh
+

@@ -1,0 +1,14 @@
+---
+- name: Install dashbaord
+  shell: kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.0.0-beta1/aio/deploy/recommended.yaml
+
+- name: create token for accessing dashboard
+  shell: kubectl -n kube-system describe $(kubectl -n kube-system get secret -n kube-system -o name | grep namespace) | grep token:
+  register: output
+- name: Print token for accessing dashboard
+  debug:
+    var: output.stdout
+
+- name: storing token locally
+  local_action: copy content={{ output.stdout }} dest=./dashboard_token
+

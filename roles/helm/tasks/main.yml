@@ -1,0 +1,15 @@
+
+- name: install wget
+  yum:
+    name: wget
+    state: present
+
+- name: Copy install script
+  copy: src=files/helm-install.sh dest=/tmp/helm-install.sh mode=0755
+
+- name: Install helm
+  command: sh /tmp/helm-install.sh
+  register: output
+- debug:
+    var: output.stdout_lines
+

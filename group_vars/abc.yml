@@ -1,0 +1,13 @@
+---
+#etcd backup details for account ABC
+pathtosave: /tmp/snapshotdb
+etcd_cacert: /etc/kubernetes/pki/etcd/ca.crt 
+etcd_cert: /etc/kubernetes/pki/etcd/healthcheck-client.crt 
+etcd_key: /etc/kubernetes/pki/etcd/healthcheck-client.key
+end_point: "https://[127.0.0.1]:2379"
+
+#cluster new version to update
+kubeadmnewv: kubeadm-1.15.3-0
+kubectlversion: kubectl-1.15.3-0
+kubeletversion: kubelet-1.15.3-0
+nodeversion: v1.15.3

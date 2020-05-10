@@ -1,0 +1,17 @@
+- name: Copy prometheus.tar files
+  copy: src=./files/prometheus.tar dest=./prometheus.tar
+
+- name: Untar 
+  shell: tar -xvf ~/prometheus.tar
+
+- name: Copy install script
+  copy: src=./files/prometheus.sh dest=/tmp/prometheus.sh mode=0755
+
+- name: install Pod prometheus
+  command: sh /tmp/prometheus.sh
+
+- name: get pod details
+  command: kubectl get po -n monitoring
+  register: monitoring_result
+- debug:
+  var: monitoring_result

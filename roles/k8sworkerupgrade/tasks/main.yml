@@ -1,0 +1,55 @@
+- name: Print version current version
+  shell: kubectl get nodes
+  register: cluster_cversion_stat
+  delegate_to: master
+- debug:
+    var: cluster_cversion_stat.stdout_lines
+
+
+- name: Set kubeadm version to update
+  yum: 
+    name: "{{ kubeadmnewv }}"
+    state: present
+
+- name: Drain node "{{ inventory_hostname }}"
+  shell: kubectl drain {{ inventory_hostname }} --ignore-daemonsets
+  delegate_to: master
+
+- name: Upgrade cluster to specified version earlier "{{ kubeadmnewv }}"
+  shell: |
+    kubeadm upgrade node config --kubelet-version {{ nodeversion }}
+    
+    exit 0
+  register: cluster_update_stat
+- debug:
+    var: cluster_update_stat.stdout_lines
+
+
+- name: Upgrade kubelet 
+  yum:
+    name: "{{ kubeletversion }}"
+    state: present
+- name: reload kubelet 
+  service:
+    name: kubelet
+    state: restarted
+- name: Upgrade kubectl
+  yum:
+    name: "{{ kubectlversion }}"
+    state: present
+
+- name: un condon node "{{ inventory_hostname }}"
+  shell: kubectl uncordon {{ inventory_hostname }}
+  delegate_to: master
+
+- pause:
+    seconds: 30
+
+- name: Print version
+  shell: kubectl get nodes
+  register: cluster_version_stat
+  delegate_to: master
+
+- debug:
+    var: cluster_version_stat.stdout_lines
+ 
